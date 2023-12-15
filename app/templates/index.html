@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="title my-3 font-weight-bold text-center">Электронная библиотека</h1>
+<div class="container">
+    <form method="GET">
+        <div class="col-md-12 d-flex">
+            <div class="mb-3 input-group">
+                <input class="form-control" type="text" name="title" id="title" value="{{ title or '' }}"
+                    placeholder="Название книги">
+            </div>
+            <div class="mb-3 input-group">
+                <select multiple class="form-select" name="year" id="year">
+                    <option value="0">Не выбрано</option>
+                    {% for year in years %}
+                    <option {% if year in years_list %}selected{% endif %} value="{{ year }}">{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3 input-group">
+                <input class="form-control" name="amount_from" type="number" id="amount_from"
+                    value="{{ amount_from or '' }}" placeholder="От страниц">
+                <input class="form-control" name="amount_to" type="number" id="amount_to" value="{{ amount_to or '' }}"
+                    placeholder="До страниц">
+            </div>
+            <div class="mb-3 input-group">
+                <input class="form-control" type="text" name="author" id="author" value="{{ author or '' }}"
+                    placeholder="Автор">
+            </div>
+        </div>
+        <div class="mb-3 text-center">
+            <button type="submit" class="btn btn-primary">Поиск</button>
+        </div>
+    </form>
+    {% if flag %}
+    <div class="h-100 text-center d-flex p-3">
+        <div class="m-auto">
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Обложка</th>
+                        <th scope="col">Название</th>
+                        <th scope="col">Жанр</th>
+                        <th scope="col">Дата издания</th>
+                        <th scope="col">Средняя оценка</th>
+                        <th scope="col">Количество рецензий</th>
+                        <th scope="col">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for book in books %}
+                    <tr>
+                        <th class="book-img">
+                            <div class="course-logo"
+                                style="background-image: url({{ book.get_img() }}); height: 200px;">
+                            </div>
+                        </th>
+                        <th class="book-title">{{ book.title }}</th>
+                        <th>
+                            {% for genre in book_genre %}
+                            {% if genre.books_id == book.id %}{{ genre.genre.genre_name }}</br>{% endif %}
+                            {% endfor %}
+                        </th>
+                        <th>{{ book.year }}</th>
+                        <th>{{ book.rating }}</th>
+                        <th>{{ book.reviews|length }}</th>
+                        <td>
+                            <div class="btn-group">
+                                <a class="btn btn-primary"
+                                    href="{{ url_for('book.show', book_id=book.id) }}">Просмотр</a>
+                                {% if current_user.is_authenticated %}
+                                {% if current_user.can('edit') %}
+                                <a class="btn btn-secondary"
+                                    href="{{ url_for('book.edit', book_id=book.id) }}">Редактирование</a>
+                                {% endif %}
+                                {% if current_user.can('delete') %}
+                                <button type="button" class="btn btn-danger"
+                                    data-url="{{ url_for('book.delete', book_id=book.id) }}" data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal" data-title="{{ book.title }}">
+                                    Удалить
+                                </button>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    {% if not flag %}
+    <h3 class="title my-3 font-weight-bold text-center">Ничего не найдено</h3>
+    {% endif %}
+    {% if current_user.is_authenticated and current_user.can('delete') %}
+    <div class="text-center my-3">
+        <a class="btn btn-lg btn-primary" href="{{ url_for('book.new') }}">Добавить новую книгу</a>
+    </div>
+    {% endif %}
+</div>
+
+{% if current_user.is_authenticated %}
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Удаление книги</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Вы уверены, что хотите удалить книгу
+                "<span class="delete-title"></span>"
+                ?
+                <form action="" class="d-none" method="POST">
+                    <input type="submit" id="submit-delete">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <label for="submit-delete" class="btn btn-danger mb-0">Удалить</label>
+            </div>
+        </div>
+    </div>
+</div>
+{%endif%}
+
+<script src="{{ url_for('static', filename='delete.js')}}"></script>
+{% endblock %}

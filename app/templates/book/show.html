@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+
+    <h2 class="my-3 text-center text-uppercase font-weight-bold">Просмотр книги</h2>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <td>Название книги</td>
+                <td>{{ book.title }}</td>
+            </tr>
+            <tr>
+                <td>Жанры</td>
+                <td>
+                    {% for genre in book_genre %}
+                    {% if genre.books_id == book.id %}{{ genre.genre.genre_name }}</br>{% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <td>Автор</td>
+                <td>{{ book.author }}</td>
+            </tr>
+            <tr>
+                <td>Издательство</td>
+                <td>{{ book.publisher }}</td>
+            </tr>
+            <tr>
+                <td>Описание книги</td>
+                <td>{{ book.description | safe }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="col-md-3 mb-3 mb-md-0 d-flex align-items-center justify-content-center">
+        <div class="course-logo" style="background-image: url({{ img }});">
+        </div>
+    </div>
+    {% if current_user.is_authenticated and not review %}
+    <div class="text-center my-3">
+        <a class="btn btn-lg btn-primary" href="{{ url_for('book.review', book_id=book.id) }}">Написать рецензию</a>
+    </div>
+    {% endif %}
+
+    {% if reviews %}
+    {% for review in reviews %}
+    <div class="d-flex flex-column mt-2">
+        <div class="d-flex">
+            <div class="flex-grow-1 ms-3">
+                <h5>{{ review.get_user() }} <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                            fill="currentColor" class="bi bi-star mb-1" viewBox="0 0 16 16">
+                            <path
+                                d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288L8 2.223l1.847 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.565.565 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z" />
+                        </svg></span>{{ review.rating }}</h5>
+                <p><span>{{ review.text | safe }}</span></p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+
+{% endblock %}
